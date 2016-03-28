@@ -334,6 +334,61 @@ module Proxmox
       http_action_put("nodes/#{@node}/lxc/#{vmid}/config", data)
     end
 
+    # Get VM list
+    def qemu_get
+      data = http_action_get "nodes/#{@node}/qemu"
+      ve_list = {}
+      data.each do |ve|
+        ve_list[ve['vmid']] = ve
+      end
+      ve_list
+    end
+
+    # Create VM container
+    def qemu_post(template, vmid, config = {})
+      config['vmid'] = vmid
+      config['template'] = "local%3Aisol%2F#{template}.iso"
+      config['kvm'] = 1
+      vm_definition = config.to_a.map { |v| v.join '=' }.join '&'
+
+      http_action_post("nodes/#{@node}/qemu", vm_definition)
+    end
+
+    # Delete VM
+    def qemu_delete(vmid)
+      http_action_delete "nodes/#{@node}/qemu/#{vmid}"
+    end
+
+    # Get VM status
+    def qemu_status(vmid)
+      http_action_get "nodes/#{@node}/qemu/#{vmid}/status/current"
+    end
+
+    # Start VM
+    def qemu_start(vmid)
+      http_action_post "nodes/#{@node}/qemu/#{vmid}/status/start"
+    end
+
+    # Stop VM
+    def qemu_stop(vmid)
+      http_action_post "nodes/#{@node}/qemu/#{vmid}/status/stop"
+    end
+
+    # Shutdown VM
+    def qemu_shutdown(vmid)
+      http_action_post "nodes/#{@node}/qemu/#{vmid}/status/shutdown"
+    end
+
+    # Get VM config
+    def qemu_config(vmid)
+      http_action_get "nodes/#{@node}/qemu/#{vmid}/config"
+    end
+
+    # Set VM config
+    def qemu_config_set(vmid, data)
+      http_action_put("nodes/#{@node}/qemu/#{vmid}/config", data)
+    end
+
     private
 
     # Methods manages auth
